@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=aca-bank-db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - '8000:5432'
+
+volumes:
+  postgres-data:

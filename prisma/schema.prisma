@@ -1,0 +1,78 @@
+// npx prisma migrate reset
+// npx prisma migrate dev --name <name>
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/*
+ * Role Model
+ */
+
+model Role {
+  id                    Int            @id             @default(autoincrement())
+  name                  String         @unique
+  customers             Customer[]
+  managers              Manager[]
+}
+
+/*
+ * User Model
+ */
+
+model Customer {
+  id                    String            @id             @default(uuid()) 
+  username              String            @unique         @db.VarChar(30)                  
+  password              String
+  name                  String          
+  balance               Float             @default(0)
+  roleId                Int
+  role                  Role              @relation(fields: [roleId], references: [id])
+  sendTransactions      Transaction[]     @relation("SendTransactions")
+  receiveTransactions   Transaction[]     @relation("ReceiveTransactions")
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  @@index([name])
+}
+
+/*
+ * Manager Model
+ */
+
+model Manager {
+  id                    String            @id             @default(uuid()) 
+  username              String            @unique         @db.VarChar(30)                  
+  password              String
+  name                  String            
+  roleId                Int
+  role                  Role              @relation(fields: [roleId], references: [id])
+}
+
+/*
+ * Transaction Model
+ */
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAW
+  TRANSFER
+}
+
+model Transaction {
+  id                    String            @id             @default(uuid())
+  amount                Float
+  type                  TransactionType
+  senderId              String
+  sender                Customer          @relation("SendTransactions", fields: [senderId], references: [id])
+  receiverId            String?
+  receiver              Customer?         @relation("ReceiveTransactions", fields: [receiverId], references: [id])
+  transactionDate       DateTime          @default(now())
+
+  @@index([amount, type, transactionDate])
+}
