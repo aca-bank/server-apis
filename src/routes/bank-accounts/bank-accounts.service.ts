@@ -196,4 +196,18 @@ export class BankAccountsService {
 
     return result;
   }
+
+  /**
+   * Get total bank amount
+   */
+
+  async getTotalBankAmount(): Promise<number> {
+    const totalBankAmount = await this.prisma.bankAccount.aggregate({
+      _sum: {
+        balance: true,
+      },
+    });
+
+    return totalBankAmount._sum.balance;
+  }
 }

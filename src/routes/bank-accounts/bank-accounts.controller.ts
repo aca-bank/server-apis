@@ -115,4 +115,22 @@ export class BankAccountsController {
       payload.amount,
     );
   }
+
+  /**
+   * Get total bank amount
+   * Perform by: Manager
+   */
+
+  @ApiOperation({
+    description: 'Get total bank amount',
+  })
+  @ApiOkResponse({
+    type: Number,
+  })
+  @Rbac(UserRoleEnum.MANAGER)
+  @Get('/total-bank-amount')
+  @HttpCode(HttpStatus.OK)
+  getTotalBankAmount() {
+    return this.bankAccountsService.getTotalBankAmount();
+  }
 }
