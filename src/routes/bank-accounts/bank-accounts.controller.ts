@@ -44,8 +44,8 @@ export class BankAccountsController {
   @Rbac(UserRoleEnum.CUSTOMER)
   @Get('/balance')
   @HttpCode(HttpStatus.OK)
-  getBalance(@AuthUser('userId') userId: string) {
-    return this.bankAccountsService.getBalance(userId);
+  getAccountBalance(@AuthUser('userId') userId: string) {
+    return this.bankAccountsService.getAccountBalance(userId);
   }
 
   /**
@@ -60,7 +60,7 @@ export class BankAccountsController {
   })
   @Rbac(UserRoleEnum.CUSTOMER)
   @Put('/deposit')
-  depositToAccount(
+  deposit(
     @AuthUser('userId') userId: string,
     @Body() payload: AmountRequestDto,
   ) {
@@ -80,7 +80,7 @@ export class BankAccountsController {
   })
   @Rbac(UserRoleEnum.CUSTOMER)
   @Put('/withdraw')
-  withdrawFromAccount(
+  withdraw(
     @AuthUser('userId') userId: string,
     @Body() payload: AmountRequestDto,
   ) {
@@ -104,7 +104,7 @@ export class BankAccountsController {
   })
   @Rbac(UserRoleEnum.CUSTOMER)
   @Put('/transfer/:receiveUserId')
-  transferFromAccountToAccount(
+  transfer(
     @AuthUser('userId') sendUserId: string,
     @Param('receiveUserId') receiveUserId: string,
     @Body() payload: AmountRequestDto,

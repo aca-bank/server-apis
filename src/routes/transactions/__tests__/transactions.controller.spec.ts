@@ -1,27 +1,9 @@
 import { Test } from '@nestjs/testing';
-import { TransactionType } from 'src/models/transaction.model';
+import { mockTransaction1, mockTransaction2, mockUser1 } from 'src/utils/dummy';
 
 import { TransactionsController } from '../transactions.controller';
 import { TransactionOrderQueryType } from '../transactions.dtos';
 import { TransactionsService } from '../transactions.service';
-
-const mockTransaction1 = {
-  id: 't1-123456',
-  fromUserId: 'from-user-1',
-  toUserId: 'to-user-1',
-  amount: 100,
-  type: TransactionType.DEPOSIT,
-  createdAt: new Date(),
-};
-
-const mockTransaction2 = {
-  id: 't2-123456',
-  fromUserId: 'from-user-2',
-  toUserId: 'to-user-2',
-  amount: 100,
-  type: TransactionType.DEPOSIT,
-  createdAt: new Date(),
-};
 
 const mockOrderQuery: TransactionOrderQueryType = {
   amount: 'asc',
@@ -32,8 +14,8 @@ describe('TransactionController', () => {
   let transactionsService: TransactionsService;
 
   const mockTransactionService = {
-    getAllTransactionHistory: jest.fn(),
-    getTransactionHistoryByUserId: jest.fn(),
+    getAllTransactions: jest.fn(),
+    getTransactionsByUserId: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -58,33 +40,33 @@ describe('TransactionController', () => {
   });
 
   it('should return all transactions history across customers', async () => {
-    (
-      transactionsService.getAllTransactionHistory as jest.Mock
-    ).mockResolvedValueOnce([mockTransaction1, mockTransaction2]);
+    (transactionsService.getAllTransactions as jest.Mock).mockResolvedValueOnce(
+      [mockTransaction1, mockTransaction2],
+    );
 
     const result =
-      await transactionsController.getAllTransactionHistory(mockOrderQuery);
+      await transactionsController.getAllTransactions(mockOrderQuery);
 
     expect(result).toStrictEqual([mockTransaction1, mockTransaction2]);
-    expect(transactionsService.getAllTransactionHistory).toHaveBeenCalledWith(
+    expect(transactionsService.getAllTransactions).toHaveBeenCalledWith(
       mockOrderQuery,
     );
   });
 
-  it('should return all transactions history by a specific userId', async () => {
-    const mockUserId = 'user-01';
+  it('should return all transactions by a specific userId', async () => {
     (
-      transactionsService.getTransactionHistoryByUserId as jest.Mock
+      transactionsService.getTransactionsByUserId as jest.Mock
     ).mockResolvedValueOnce([mockTransaction1, mockTransaction2]);
 
-    const result = await transactionsController.getTransactionHistoryByUserId(
-      mockUserId,
+    const result = await transactionsController.getAuthUserTransactions(
+      mockUser1.id,
       mockOrderQuery,
     );
 
     expect(result).toStrictEqual([mockTransaction1, mockTransaction2]);
-    expect(
-      transactionsService.getTransactionHistoryByUserId,
-    ).toHaveBeenCalledWith(mockUserId, mockOrderQuery);
+    expect(transactionsService.getTransactionsByUserId).toHaveBeenCalledWith(
+      mockUser1.id,
+      mockOrderQuery,
+    );
   });
 });

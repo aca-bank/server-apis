@@ -62,7 +62,7 @@ export class TransactionsService {
     const createdTransaction = await this.prisma.transaction.create({
       data: {
         sentAccountId: payload.sentAccountId,
-        receivedAccountId: payload.receivedAccountId,
+        receivedAccountId: payload?.receivedAccountId,
         amount: payload.amount,
         type: payload.type,
       },

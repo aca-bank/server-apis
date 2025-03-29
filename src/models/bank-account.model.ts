@@ -11,7 +11,7 @@ export class BankAccountModel {
   })
   @IsString()
   @IsNotEmpty()
-  id: string;
+  id?: string;
 
   @ApiProperty({
     description: 'Account balance',

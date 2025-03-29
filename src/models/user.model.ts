@@ -14,7 +14,7 @@ export class UserModel {
     type: String,
   })
   @IsString()
-  id: string;
+  id?: string;
 
   @ApiProperty({
     description: 'Username for sign in',

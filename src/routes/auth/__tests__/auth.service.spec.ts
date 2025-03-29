@@ -1,28 +1,15 @@
-import {
-  ForbiddenException,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/app/prisma/prisma.service';
-import { UserModel, UserRole } from 'src/models/user.model';
+import { mockUser1 } from 'src/utils/dummy';
 
 import { AuthService } from '../auth.service';
 import * as authUtils from '../auth.utils';
 
 jest.mock('bcrypt');
 jest.mock('../auth.utils.ts');
-
-const mockUser = {
-  id: 'c1-012345',
-  username: 'customer-1',
-  password: '1111',
-  name: 'Customer 1',
-  balance: 100,
-  role: UserRole.CUSTOMER,
-};
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -61,48 +48,6 @@ describe('AuthService', () => {
     jest.clearAllMocks();
   });
 
-  describe('createUser', () => {
-    it('should throw error if the initial balance is less than 0', async () => {
-      const mockPayload = {
-        ...mockUser,
-        balance: 0,
-      };
-
-      try {
-        await authService.createUser(mockPayload, UserRole.CUSTOMER);
-      } catch (error) {
-        expect(error).toBeInstanceOf(UnprocessableEntityException);
-        expect(error.message).toEqual('Balance must be greater than 0');
-      }
-    });
-
-    it('should throw error if the username was taken by another user', async () => {
-      prismaService.user.findUnique = jest
-        .fn()
-        .mockResolvedValueOnce({ username: mockUser.username });
-
-      try {
-        await authService.createUser(mockUser, UserRole.CUSTOMER);
-      } catch (error) {
-        expect(error).toBeInstanceOf(UnprocessableEntityException);
-        expect(error.message).toEqual('Username is existed');
-      }
-    });
-
-    it('should create a new user successfully', async () => {
-      const createdUser: UserModel = {
-        ...mockUser,
-        id: '123456',
-        role: UserRole.CUSTOMER,
-        createdAt: new Date(),
-      };
-      prismaService.user.create = jest.fn().mockResolvedValueOnce(createdUser);
-
-      const result = await authService.createUser(mockUser, UserRole.CUSTOMER);
-      expect(result).toStrictEqual(createdUser);
-    });
-  });
-
   describe('signIn', () => {
     const mockSignInPayload = {
       username: 'customer-1',
@@ -120,7 +65,9 @@ describe('AuthService', () => {
     });
 
     it('should throw error when the password is incorrect', async () => {
-      prismaService.user.findUnique = jest.fn().mockResolvedValueOnce(mockUser);
+      prismaService.user.findUnique = jest
+        .fn()
+        .mockResolvedValueOnce(mockUser1);
       bcrypt.compare = jest.fn().mockResolvedValueOnce(false);
 
       try {
@@ -136,17 +83,16 @@ describe('AuthService', () => {
         accessToken: 'access-token',
         refreshToken: 'refresh-token',
       };
-      prismaService.user.findUnique = jest.fn().mockResolvedValueOnce(mockUser);
+      prismaService.user.findUnique = jest
+        .fn()
+        .mockResolvedValueOnce(mockUser1);
       bcrypt.compare = jest.fn().mockResolvedValueOnce(true);
       (authUtils as any).getTokens = jest
         .fn()
         .mockResolvedValueOnce(mockTokens);
 
       const result = await authService.signIn(mockSignInPayload);
-      expect(result).toStrictEqual({
-        ...mockTokens,
-        ...mockUser,
-      });
+      expect(result).toStrictEqual(mockTokens);
     });
   });
 });

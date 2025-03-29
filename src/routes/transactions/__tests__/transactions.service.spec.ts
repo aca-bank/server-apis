@@ -1,33 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from 'src/app/prisma/prisma.service';
-import {
-  TransactionModel,
-  TransactionType,
-} from 'src/models/transaction.model';
+import { TransactionModel } from 'src/models/transaction.model';
+import { SharedService } from 'src/routes/_shared/shared.service';
+import { mockTransaction1, mockTransaction2, mockUser1 } from 'src/utils/dummy';
 
-import {
-  CreateTransactionRequestDto,
-  TransactionOrderQueryType,
-} from '../transactions.dtos';
+import { TransactionOrderQueryType } from '../transactions.dtos';
 import { TransactionsService } from '../transactions.service';
-
-const mockTransaction1 = {
-  id: 't1-123456',
-  fromUserId: 'from-user-1',
-  toUserId: 'to-user-1',
-  amount: 100,
-  type: TransactionType.DEPOSIT,
-  createdAt: new Date(),
-};
-
-const mockTransaction2 = {
-  id: 't2-123456',
-  fromUserId: 'from-user-2',
-  toUserId: 'to-user-2',
-  amount: 100,
-  type: TransactionType.DEPOSIT,
-  createdAt: new Date(),
-};
 
 const mockOrderQuery: TransactionOrderQueryType = {
   amount: 'asc',
@@ -36,6 +14,11 @@ const mockOrderQuery: TransactionOrderQueryType = {
 describe('TransactionService', () => {
   let transactionsService: TransactionsService;
   let prismaService: PrismaService;
+  let sharedService: SharedService;
+
+  const mockSharedService = {
+    checkAndGetUserById: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -50,38 +33,45 @@ describe('TransactionService', () => {
             },
           },
         },
+        {
+          provide: SharedService,
+          useValue: mockSharedService,
+        },
       ],
     }).compile();
 
     transactionsService = module.get<TransactionsService>(TransactionsService);
     prismaService = module.get<PrismaService>(PrismaService);
+    sharedService = module.get<SharedService>(SharedService);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('getAllTransactionHistory', () => {
+  describe('getAllTransactions', () => {
     it('should return all transactions history across customers', async () => {
       prismaService.transaction.findMany = jest
         .fn()
         .mockResolvedValueOnce([mockTransaction1, mockTransaction2]);
 
       const result =
-        await transactionsService.getAllTransactionHistory(mockOrderQuery);
+        await transactionsService.getAllTransactions(mockOrderQuery);
       expect(result).toStrictEqual([mockTransaction1, mockTransaction2]);
     });
   });
 
-  describe('getTransactionHistoryByUserId', () => {
-    it('should return all transactions history by a specific userId', async () => {
-      const mockUserId = 'user-01';
+  describe('getTransactionsByUserId', () => {
+    it('should return all transactions by a specific userId', async () => {
+      sharedService.checkAndGetUserById = jest
+        .fn()
+        .mockResolvedValueOnce(mockUser1);
       prismaService.transaction.findMany = jest
         .fn()
         .mockResolvedValueOnce([mockTransaction1, mockTransaction2]);
 
-      const result = await transactionsService.getTransactionHistoryByUserId(
-        mockUserId,
+      const result = await transactionsService.getTransactionsByUserId(
+        mockUser1.id,
         mockOrderQuery,
       );
       expect(result).toStrictEqual([mockTransaction1, mockTransaction2]);
@@ -89,25 +79,18 @@ describe('TransactionService', () => {
   });
 
   describe('createTransaction', () => {
-    it('should create a Deposit, Withdraw or Transfer transaction successfully', async () => {
-      const createTransactionRequest: CreateTransactionRequestDto = {
-        fromUserId: 'user-01',
-        toUserId: 'user-02',
-        amount: 100,
-        type: TransactionType.DEPOSIT,
-      };
+    it('should create a transaction successfully', async () => {
       const createdTransactionResponse: TransactionModel = {
-        ...createTransactionRequest,
+        ...mockTransaction1,
         id: 'transaction-01',
-        fromUser: null,
+        createdDate: new Date(),
       };
       prismaService.transaction.create = jest
         .fn()
         .mockResolvedValueOnce(createdTransactionResponse);
 
-      const result = await transactionsService.createTransaction(
-        createTransactionRequest,
-      );
+      const result =
+        await transactionsService.createTransaction(mockTransaction1);
       expect(result).toStrictEqual(createdTransactionResponse);
     });
   });

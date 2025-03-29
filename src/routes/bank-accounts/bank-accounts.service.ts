@@ -31,8 +31,8 @@ export class BankAccountsService {
 
   async createAccount(userId: string): Promise<BankAccountModel> {
     const targetUser = await this.sharedService.checkAndGetUserById(userId);
-    if (targetUser.account) {
-      throw new ForbiddenException('This user already has bank account');
+    if (targetUser?.account) {
+      throw new ForbiddenException('This user already has a bank account');
     }
 
     const createdAccount = await this.prisma.bankAccount.create({
@@ -48,7 +48,7 @@ export class BankAccountsService {
    * Get current balance
    */
 
-  async getBalance(userId: string): Promise<GetBalanceResponseDto> {
+  async getAccountBalance(userId: string): Promise<GetBalanceResponseDto> {
     const targetUser = await this.sharedService.checkAndGetUserById(userId);
     return {
       balance: targetUser.account.balance,
