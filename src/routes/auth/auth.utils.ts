@@ -9,6 +9,7 @@ type GetTokensParams = {
   jwtService: JwtService;
   jwtPayload: {
     userId: string;
+    accountId: string;
     username: string;
     name: string;
     role: string;

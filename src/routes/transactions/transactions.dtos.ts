@@ -1,12 +1,10 @@
-import { OmitType, PickType } from '@nestjs/mapped-types';
+import { PickType } from '@nestjs/mapped-types';
 import { TransactionModel } from 'src/models/transaction.model';
 import { OrderType } from 'src/types/order';
 
-export class TransactionDto extends OmitType(TransactionModel, ['updatedAt']) {}
-
 export class CreateTransactionRequestDto extends PickType(TransactionModel, [
-  'fromUserId',
-  'toUserId',
+  'sentAccountId',
+  'receivedAccountId',
   'amount',
   'type',
 ]) {}

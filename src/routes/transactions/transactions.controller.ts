@@ -1,9 +1,9 @@
 import { Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AuthUser } from 'src/decorators/get-header-user';
+import { AuthUser } from 'src/decorators/get-auth-user';
 import { Rbac } from 'src/metadata/rbac.metadata';
 import { TransactionModel } from 'src/models/transaction.model';
-import { UserRole } from 'src/models/user.model';
+import { UserRoleEnum } from 'src/models/user.model';
 
 import { TransactionOrderQueryType } from './transactions.dtos';
 import { TransactionsService } from './transactions.service';
@@ -24,11 +24,11 @@ export class TransactionsController {
   @ApiOkResponse({
     type: [TransactionModel],
   })
-  @Rbac(UserRole.MANAGER)
+  @Rbac(UserRoleEnum.MANAGER)
   @Get('/all')
   @HttpCode(HttpStatus.OK)
-  getAllTransactionHistory(@Query() orderQuery: TransactionOrderQueryType) {
-    return this.transactionsService.getAllTransactionHistory(orderQuery);
+  getAllTransactions(@Query() orderQuery: TransactionOrderQueryType) {
+    return this.transactionsService.getAllTransactions(orderQuery);
   }
 
   /**
@@ -37,20 +37,20 @@ export class TransactionsController {
    */
 
   @ApiOperation({
-    summary: 'Get transaction history of a specific customer',
+    summary: 'Get transactions of a specific user',
   })
   @ApiOkResponse({
     type: [TransactionModel],
   })
-  @Rbac(UserRole.CUSTOMER)
+  @Rbac(UserRoleEnum.CUSTOMER)
   @Get('/customer')
   @HttpCode(HttpStatus.OK)
-  getTransactionHistoryByUserId(
-    @AuthUser('userId') userId: string,
+  getAuthUserTransactions(
+    @AuthUser('accountId') accountId: string,
     @Query() orderQuery: TransactionOrderQueryType,
   ) {
-    return this.transactionsService.getTransactionHistoryByUserId(
-      userId,
+    return this.transactionsService.getTransactionsByAccountId(
+      accountId,
       orderQuery,
     );
   }

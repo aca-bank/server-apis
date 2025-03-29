@@ -1,142 +1,57 @@
 import {
   Body,
   Controller,
-  Get,
   HttpCode,
   HttpStatus,
-  Param,
-  Put,
+  Post,
+  UseInterceptors,
 } from '@nestjs/common';
-import {
-  ApiOkResponse,
-  ApiOperation,
-  ApiParam,
-  ApiTags,
-} from '@nestjs/swagger';
-import { AuthUser } from 'src/decorators/get-header-user';
-import { Rbac } from 'src/metadata/rbac.metadata';
-import { UserRole } from 'src/models/user.model';
+import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { RestrictUserDataInterceptor } from 'src/interceptors/restrict-user.interceptor';
+import { IsPublic } from 'src/metadata/public.metadata';
+import { UserRoleEnum } from 'src/models/user.model';
 
-import {
-  DepositResponseDto,
-  ChangeAmountRequestDto,
-  GetBalanceResponseDto,
-  TransferResponseDto,
-  WithdrawResponseDto,
-} from './users.dtos';
+import { CreateUserRequestDto, UserDto } from './users.dtos';
 import { UsersService } from './users.service';
 
 @ApiTags('users')
-@Controller('users')
+@Controller()
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
   /**
-   * Get current balance of a specific customer
-   * Perform by: Manager
+   * Sign up for Customer
    */
 
   @ApiOperation({
-    summary: 'Get current balance of a specific customer',
+    summary: 'Sign up customer account',
   })
-  @ApiOkResponse({
-    type: GetBalanceResponseDto,
+  @ApiCreatedResponse({
+    type: UserDto,
   })
-  @ApiParam({
-    name: 'userId',
-    type: String,
-  })
-  @Rbac(UserRole.MANAGER)
-  @Get('/balance/:userId')
-  @HttpCode(HttpStatus.OK)
-  getCustomerBalance(@Param('userId') userId: string) {
-    return this.usersService.getBalance(userId);
+  @Post('customer/sign-up')
+  @IsPublic()
+  @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(RestrictUserDataInterceptor)
+  signUpCustomer(@Body() userPayload: CreateUserRequestDto) {
+    return this.usersService.createUser(userPayload, UserRoleEnum.CUSTOMER);
   }
 
   /**
-   * Get current balance
-   * Perform by: Customer
+   * Sign up for manager
    */
 
   @ApiOperation({
-    summary: 'Get current balance',
+    summary: 'Sign up manager account',
   })
-  @ApiOkResponse({
-    type: GetBalanceResponseDto,
+  @ApiCreatedResponse({
+    type: UserDto,
   })
-  @Rbac(UserRole.CUSTOMER)
-  @Get('/balance')
-  @HttpCode(HttpStatus.OK)
-  getCurrentBalance(@AuthUser('userId') userId: string) {
-    return this.usersService.getBalance(userId);
-  }
-
-  /**
-   * Deposit to account
-   * Perform by: Customer
-   */
-
-  @ApiOperation({
-    summary: 'Deposit to account',
-  })
-  @ApiOkResponse({
-    type: DepositResponseDto,
-  })
-  @Rbac(UserRole.CUSTOMER)
-  @Put('/deposit')
-  depositToAccount(
-    @AuthUser('userId') userId: string,
-    @Body() payload: ChangeAmountRequestDto,
-  ) {
-    return this.usersService.depositToAccount(userId, payload.amount);
-  }
-
-  /**
-   * Withdraw to account
-   * Perform by: Customer
-   */
-
-  @ApiOperation({
-    summary: 'Withdraw from account',
-  })
-  @ApiOkResponse({
-    type: WithdrawResponseDto,
-  })
-  @Rbac(UserRole.CUSTOMER)
-  @Put('/withdraw')
-  withdrawFromAccount(
-    @AuthUser('userId') userId: string,
-    @Body() payload: ChangeAmountRequestDto,
-  ) {
-    return this.usersService.withdrawFromAccount(userId, payload.amount);
-  }
-
-  /**
-   * Transfer from account to account
-   * Perform by: Customer
-   */
-
-  @ApiOperation({
-    summary: 'Transfer from account to account',
-  })
-  @ApiOkResponse({
-    type: TransferResponseDto,
-  })
-  @ApiParam({
-    name: 'toUserId',
-    type: String,
-  })
-  @Rbac(UserRole.CUSTOMER)
-  @Put('/transfer/:toUserId')
-  transferFromAccountToAccount(
-    @AuthUser('userId') fromUserId: string,
-    @Param('toUserId') toUserId: string,
-    @Body() payload: ChangeAmountRequestDto,
-  ) {
-    return this.usersService.transferFromAccountToAccount(
-      fromUserId,
-      toUserId,
-      payload.amount,
-    );
+  @Post('manager/sign-up')
+  @IsPublic()
+  @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(RestrictUserDataInterceptor)
+  signUpManager(@Body() userPayload: CreateUserRequestDto) {
+    return this.usersService.createUser(userPayload, UserRoleEnum.MANAGER);
   }
 }

@@ -2,15 +2,11 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
-  UnprocessableEntityException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/app/prisma/prisma.service';
-import { UserModel, UserRole } from 'src/models/user.model';
-import { hashData } from 'src/utils/helpers';
-
-import { CreateUserRequestDto } from '../users/users.dtos';
+import { UserModel } from 'src/models/user.model';
 
 import { SignInDto } from './auth.dtos';
 import { TokensResponse } from './auth.types';
@@ -24,38 +20,6 @@ export class AuthService {
   ) {}
 
   /**
-   * Sign up for a new user (customer, manager)
-   */
-
-  async createUser(
-    payload: CreateUserRequestDto,
-    userRole: UserRole,
-  ): Promise<UserModel> {
-    if (payload.balance <= 0 && userRole === UserRole.CUSTOMER) {
-      throw new UnprocessableEntityException('Balance must be greater than 0');
-    }
-
-    const targetUser = await this.prisma.user.findUnique({
-      where: { username: payload.username },
-    });
-
-    if (targetUser) {
-      throw new UnprocessableEntityException('Username is existed');
-    }
-
-    const hashedPassword = await hashData(payload.password);
-    const createdUser = await this.prisma.user.create({
-      data: {
-        ...payload,
-        password: hashedPassword,
-        role: userRole,
-      },
-    });
-
-    return createdUser as UserModel;
-  }
-
-  /**
    * Sign in
    */
 
@@ -63,6 +27,9 @@ export class AuthService {
     const targetUser = await this.prisma.user.findUnique({
       where: {
         username: payload.username,
+      },
+      include: {
+        account: true,
       },
     });
 
@@ -83,6 +50,7 @@ export class AuthService {
       jwtService: this.jwtService,
       jwtPayload: {
         userId: targetUser.id,
+        accountId: targetUser.account.id,
         username: targetUser.username,
         name: targetUser.name,
         role: targetUser.role,

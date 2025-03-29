@@ -16,7 +16,7 @@ export class TransactionsService {
    * Get all transactions across users
    */
 
-  async getAllTransactionHistory(
+  async getAllTransactions(
     orderQuery: TransactionOrderQueryType,
   ): Promise<TransactionModel[]> {
     const transactions = await this.prisma.transaction.findMany({
@@ -26,16 +26,16 @@ export class TransactionsService {
   }
 
   /**
-   * Get transaction history of a specific customer
+   * Get transactions of a specific account of user
    */
 
-  async getTransactionHistoryByUserId(
-    userId: string,
+  async getTransactionsByAccountId(
+    accountId: string,
     orderQuery: TransactionOrderQueryType,
   ): Promise<TransactionModel[]> {
     const transactions = await this.prisma.transaction.findMany({
       where: {
-        OR: [{ fromUserId: userId }, { toUserId: userId }],
+        OR: [{ sentAccountId: accountId }, { receivedAccountId: accountId }],
       },
       orderBy: normalizeOrderQuery(orderQuery),
     });
@@ -51,7 +51,12 @@ export class TransactionsService {
     payload: CreateTransactionRequestDto,
   ): Promise<TransactionModel> {
     const createdTransaction = await this.prisma.transaction.create({
-      data: payload,
+      data: {
+        sentAccountId: payload.sentAccountId,
+        receivedAccountId: payload.receivedAccountId,
+        amount: payload.amount,
+        type: payload.type,
+      },
     });
 
     return createdTransaction as TransactionModel;

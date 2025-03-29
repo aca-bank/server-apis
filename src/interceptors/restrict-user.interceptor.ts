@@ -13,7 +13,7 @@ interface UserResponse {
 }
 
 @Injectable()
-export class RestrictUserInterceptor
+export class RestrictUserDataInterceptor
   implements NestInterceptor<User, UserResponse>
 {
   intercept(

@@ -11,54 +11,45 @@ datasource db {
 }
 
 /*
- * Role Model
- */
-
-model Role {
-  id                    Int            @id             @default(autoincrement())
-  name                  String         @unique
-  customers             Customer[]
-  managers              Manager[]
-}
-
-/*
  * User Model
  */
 
-model Customer {
+enum UserRoleEnum  {
+  CUSTOMER
+  MANAGER
+}
+
+model User {
   id                    String            @id             @default(uuid()) 
   username              String            @unique         @db.VarChar(30)                  
-  password              String
+  password              String            
   name                  String          
-  balance               Float             @default(0)
-  roleId                Int
-  role                  Role              @relation(fields: [roleId], references: [id])
-  sendTransactions      Transaction[]     @relation("SendTransactions")
-  receiveTransactions   Transaction[]     @relation("ReceiveTransactions")
-  createdAt             DateTime          @default(now())
-  updatedAt             DateTime          @updatedAt
+  role                  UserRoleEnum
+  account               Account?          
+  createdDate           DateTime          @default(now())
+  updatedDate           DateTime          @updatedAt
 
-  @@index([name])
+  @@index([name, role, createdDate])
 }
 
 /*
- * Manager Model
+ * Account Model
  */
 
-model Manager {
+model Account {
   id                    String            @id             @default(uuid()) 
-  username              String            @unique         @db.VarChar(30)                  
-  password              String
-  name                  String            
-  roleId                Int
-  role                  Role              @relation(fields: [roleId], references: [id])
+  balance               Float             @default(0)
+  userId                String            @unique
+  user                  User              @relation(fields: [userId], references: [id])
+  sentTransactions      Transaction[]     @relation("SentTransactions")
+  receivedTransactions  Transaction[]     @relation("ReceivedTransactions")
 }
 
 /*
  * Transaction Model
  */
 
-enum TransactionType {
+enum TransactionTypeEnum {
   DEPOSIT
   WITHDRAW
   TRANSFER
@@ -66,13 +57,13 @@ enum TransactionType {
 
 model Transaction {
   id                    String            @id             @default(uuid())
+  type                  TransactionTypeEnum
   amount                Float
-  type                  TransactionType
-  senderId              String
-  sender                Customer          @relation("SendTransactions", fields: [senderId], references: [id])
-  receiverId            String?
-  receiver              Customer?         @relation("ReceiveTransactions", fields: [receiverId], references: [id])
-  transactionDate       DateTime          @default(now())
+  sentAccountId         String
+  sentAccount           Account           @relation("SentTransactions", fields: [sentAccountId], references: [id])
+  receivedAccountId     String?
+  receivedAccount       Account?          @relation("ReceivedTransactions", fields: [receivedAccountId], references: [id])
+  createdDate           DateTime          @default(now())
 
-  @@index([amount, type, transactionDate])
+  @@index([amount, type, createdDate])
 }

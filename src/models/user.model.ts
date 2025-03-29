@@ -1,46 +1,62 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsDate, IsNotEmpty, IsString } from 'class-validator';
 
-import { TransactionModel } from './transaction.model';
+import { AccountModel } from './account.model';
 
-export enum UserRole {
+export enum UserRoleEnum {
   CUSTOMER = 'CUSTOMER',
   MANAGER = 'MANAGER',
 }
 
 export class UserModel {
+  @ApiProperty({
+    description: 'Uuid',
+    type: String,
+  })
+  @IsString()
   id: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Username for sign in',
+    type: String,
+  })
   @IsString()
   @IsNotEmpty()
   username: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Password of sign in',
+    type: String,
+  })
   @IsString()
   @IsNotEmpty()
   password: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Full name of user',
+    type: String,
+  })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty()
-  @IsNumber()
+  @ApiProperty({
+    description: 'Role for user',
+    type: String,
+    enum: UserRoleEnum,
+  })
   @IsNotEmpty()
-  balance: number;
+  role: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
-  role: UserRole;
-
-  @ApiProperty()
-  transactions?: TransactionModel[];
+  @ApiProperty({
+    description: 'Account info for customer role',
+    type: () => AccountModel,
+  })
+  account?: AccountModel;
 
   @IsDate()
-  createdAt?: Date;
+  createdDate?: Date;
 
   @IsDate()
-  updatedAt?: Date;
+  updatedDate?: Date;
 }

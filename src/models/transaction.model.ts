@@ -1,43 +1,66 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
-import { UserModel } from './user.model';
+import { AccountModel } from './account.model';
 
-export enum TransactionType {
+export enum TransactionTypeEnum {
   DEPOSIT = 'DEPOSIT',
   WITHDRAW = 'WITHDRAW',
   TRANSFER = 'TRANSFER',
 }
 
 export class TransactionModel {
-  id: string;
-
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Random id',
+    type: String,
+  })
   @IsString()
   @IsNotEmpty()
-  fromUserId: string;
+  id?: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Types of transaction',
+    enum: TransactionTypeEnum,
+    example: TransactionTypeEnum.DEPOSIT,
+  })
   @IsNotEmpty()
-  fromUser: UserModel;
+  type: TransactionTypeEnum;
 
-  @ApiProperty()
-  @IsString()
+  @ApiProperty({
+    description: 'Amount of transaction',
+    type: Number,
+  })
   @IsNotEmpty()
-  toUserId: string;
-
-  @ApiProperty()
   @IsNumber()
-  @IsNotEmpty()
   amount: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Mapping to Id in Account entity',
+    type: String,
+  })
+  @IsString()
   @IsNotEmpty()
-  type: TransactionType;
+  sentAccountId: string;
+
+  @ApiProperty({
+    description: 'Mapping to Account entity for Deposit, Withdraw and Transfer',
+    type: AccountModel,
+  })
+  sentAccount?: AccountModel;
+
+  @ApiProperty({
+    description: 'Mapping to Id in Account entity for Receive Transfer',
+    type: String,
+  })
+  @IsString()
+  receivedAccountId?: string;
+
+  @ApiProperty({
+    description: 'Mapping to Account entity for Receive Transfer',
+    type: AccountModel,
+  })
+  receivedAccount?: AccountModel;
 
   @IsDate()
-  createdAt?: Date;
-
-  @IsDate()
-  updatedAt?: Date;
+  createdDate?: Date;
 }
