@@ -1,8 +1,11 @@
 import {
+  ForbiddenException,
+  Injectable,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/app/prisma/prisma.service';
+import { AccountModel } from 'src/models/account.model';
 import { TransactionTypeEnum } from 'src/models/transaction.model';
 import { UserModel } from 'src/models/user.model';
 
@@ -15,11 +18,31 @@ import {
   WithdrawResponseDto,
 } from './accounts.dto';
 
+@Injectable()
 export class AccountsService {
   constructor(
     private prisma: PrismaService,
     private transactionsService: TransactionsService,
   ) {}
+
+  /**
+   * Create account
+   */
+
+  async createAccount(userId: string): Promise<AccountModel> {
+    const targetUser = await this.checkAndGetUserById(userId);
+    if (targetUser.account) {
+      throw new ForbiddenException('This user already has balance account');
+    }
+
+    const createdAccount = await this.prisma.account.create({
+      data: {
+        userId,
+      },
+    });
+
+    return createdAccount;
+  }
 
   /**
    * Get current balance
@@ -96,7 +119,7 @@ export class AccountsService {
 
       const createdTransaction =
         await this.transactionsService.createTransaction({
-          sentAccountId: targetUser.id,
+          sentAccountId: updatedAccount.id,
           type: TransactionTypeEnum.WITHDRAW,
           amount,
         });

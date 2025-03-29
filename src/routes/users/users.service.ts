@@ -1,13 +1,9 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { PrismaService } from 'src/app/prisma/prisma.service';
 import { UserModel, UserRoleEnum } from 'src/models/user.model';
 import { hashData } from 'src/utils/helpers';
 
-import { TransactionsService } from '../transactions/transactions.service';
+import { AccountsService } from '../accounts/accounts.service';
 
 import { CreateUserRequestDto } from './users.dtos';
 
@@ -15,14 +11,41 @@ import { CreateUserRequestDto } from './users.dtos';
 export class UsersService {
   constructor(
     private prisma: PrismaService,
-    private transactionsService: TransactionsService,
+    private accountsService: AccountsService,
   ) {}
 
   /**
-   * Sign up for a new user (customer, manager)
+   * Create for Customer
    */
 
-  async createUser(
+  async createCustomer(payload: CreateUserRequestDto): Promise<UserModel> {
+    const createdCustomer = await this.createUser(
+      payload,
+      UserRoleEnum.CUSTOMER,
+    );
+
+    const createdAccount = await this.accountsService.createAccount(
+      createdCustomer.id,
+    );
+
+    createdCustomer.account = createdAccount;
+    return createdCustomer;
+  }
+
+  /**
+   * Create for Manager
+   */
+
+  async createManager(payload: CreateUserRequestDto): Promise<UserModel> {
+    const createdManager = await this.createUser(payload, UserRoleEnum.MANAGER);
+    return createdManager;
+  }
+
+  /**
+   * Create a new user (customer, manager)
+   */
+
+  private async createUser(
     payload: CreateUserRequestDto,
     roleType: UserRoleEnum,
   ): Promise<UserModel> {
@@ -45,23 +68,5 @@ export class UsersService {
     });
 
     return createdUser;
-  }
-
-  /**
-   * Get User by Id
-   */
-
-  private async checkAndGetUserById(userId: string): Promise<UserModel> {
-    const foundUser = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-
-    if (!foundUser) {
-      throw new NotFoundException('User not found');
-    }
-
-    return foundUser;
   }
 }

@@ -9,7 +9,6 @@ import {
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RestrictUserDataInterceptor } from 'src/interceptors/restrict-user.interceptor';
 import { IsPublic } from 'src/metadata/public.metadata';
-import { UserRoleEnum } from 'src/models/user.model';
 
 import { CreateUserRequestDto, UserDto } from './users.dtos';
 import { UsersService } from './users.service';
@@ -34,7 +33,7 @@ export class UsersController {
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(RestrictUserDataInterceptor)
   signUpCustomer(@Body() userPayload: CreateUserRequestDto) {
-    return this.usersService.createUser(userPayload, UserRoleEnum.CUSTOMER);
+    return this.usersService.createCustomer(userPayload);
   }
 
   /**
@@ -52,6 +51,6 @@ export class UsersController {
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(RestrictUserDataInterceptor)
   signUpManager(@Body() userPayload: CreateUserRequestDto) {
-    return this.usersService.createUser(userPayload, UserRoleEnum.MANAGER);
+    return this.usersService.createManager(userPayload);
   }
 }

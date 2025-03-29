@@ -6,7 +6,6 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/app/prisma/prisma.service';
-import { UserModel } from 'src/models/user.model';
 
 import { SignInDto } from './auth.dtos';
 import { TokensResponse } from './auth.types';
@@ -23,7 +22,7 @@ export class AuthService {
    * Sign in
    */
 
-  async signIn(payload: SignInDto): Promise<TokensResponse & UserModel> {
+  async signIn(payload: SignInDto): Promise<TokensResponse> {
     const targetUser = await this.prisma.user.findUnique({
       where: {
         username: payload.username,
@@ -50,16 +49,13 @@ export class AuthService {
       jwtService: this.jwtService,
       jwtPayload: {
         userId: targetUser.id,
-        accountId: targetUser.account.id,
+        accountId: targetUser?.account?.id,
         username: targetUser.username,
         name: targetUser.name,
         role: targetUser.role,
       },
     });
 
-    return {
-      ...tokens,
-      ...targetUser,
-    } as TokensResponse & UserModel;
+    return tokens;
   }
 }
