@@ -5,6 +5,7 @@ import { HttpExceptionFilter } from 'src/filters/http-exception';
 import { PrismaClientExceptionFilter } from 'src/filters/prisma-exception';
 import { AccessTokenGuard } from 'src/guards/access-token.guard';
 import { RbacGuard } from 'src/guards/rbac.guard';
+import { SharedModule } from 'src/routes/_shared/shared.module';
 import { AuthModule } from 'src/routes/auth/auth.module';
 import { BankAccountsModule } from 'src/routes/bank-accounts/bank-accounts.module';
 import { TransactionsModule } from 'src/routes/transactions/transactions.module';
@@ -19,6 +20,7 @@ import { PrismaModule } from './prisma/prisma.module';
       load: [appConfig],
     }),
     PrismaModule,
+    SharedModule,
     AuthModule,
     UsersModule,
     BankAccountsModule,

@@ -9,8 +9,8 @@ export class CreateTransactionRequestDto extends PickType(TransactionModel, [
   'type',
 ]) {}
 
-export type TransactionOrderQueryType = {
+export type TransactionOrderQuery = {
   type?: OrderType;
   amount?: OrderType;
-  createdAt?: OrderType;
+  createdDate?: OrderType;
 };

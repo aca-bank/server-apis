@@ -24,8 +24,8 @@ export class RestrictUserDataInterceptor
       map((data) => ({
         ...data,
         password: undefined,
-        createdAt: undefined,
-        updatedAt: undefined,
+        createdDate: undefined,
+        updatedDate: undefined,
       })),
     );
   }

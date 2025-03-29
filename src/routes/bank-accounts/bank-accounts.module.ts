@@ -8,7 +8,7 @@ import { BankAccountsService } from './bank-accounts.service';
 @Module({
   controllers: [BankAccountsController],
   providers: [BankAccountsService],
-  imports: [TransactionsModule],
   exports: [BankAccountsService],
+  imports: [TransactionsModule],
 })
 export class BankAccountsModule {}

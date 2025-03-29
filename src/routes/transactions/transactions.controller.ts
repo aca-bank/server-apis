@@ -46,12 +46,9 @@ export class TransactionsController {
   @Get('/customer')
   @HttpCode(HttpStatus.OK)
   getAuthUserTransactions(
-    @AuthUser('accountId') accountId: string,
+    @AuthUser('userId') userId: string,
     @Query() orderQuery: TransactionOrderQueryType,
   ) {
-    return this.transactionsService.getTransactionsByAccountId(
-      accountId,
-      orderQuery,
-    );
+    return this.transactionsService.getTransactionsByUserId(userId, orderQuery);
   }
 }

@@ -3,6 +3,8 @@ import { PrismaService } from 'src/app/prisma/prisma.service';
 import { TransactionModel } from 'src/models/transaction.model';
 import { normalizeOrderQuery } from 'src/utils/helpers';
 
+import { SharedService } from '../_shared/shared.service';
+
 import {
   CreateTransactionRequestDto,
   TransactionOrderQueryType,
@@ -10,7 +12,10 @@ import {
 
 @Injectable()
 export class TransactionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private sharedService: SharedService,
+  ) {}
 
   /**
    * Get all transactions across users
@@ -29,13 +34,17 @@ export class TransactionsService {
    * Get transactions of a specific account of user
    */
 
-  async getTransactionsByAccountId(
-    accountId: string,
+  async getTransactionsByUserId(
+    userId: string,
     orderQuery: TransactionOrderQueryType,
   ): Promise<TransactionModel[]> {
+    const targetUser = await this.sharedService.checkAndGetUserById(userId);
     const transactions = await this.prisma.transaction.findMany({
       where: {
-        OR: [{ sentAccountId: accountId }, { receivedAccountId: accountId }],
+        OR: [
+          { sentAccountId: targetUser.account.id },
+          { receivedAccountId: targetUser.account.id },
+        ],
       },
       orderBy: normalizeOrderQuery(orderQuery),
     });

@@ -1,14 +1,13 @@
 import {
   ForbiddenException,
   Injectable,
-  NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/app/prisma/prisma.service';
 import { BankAccountModel } from 'src/models/bank-account.model';
 import { TransactionTypeEnum } from 'src/models/transaction.model';
-import { UserModel } from 'src/models/user.model';
 
+import { SharedService } from '../_shared/shared.service';
 import { TransactionsService } from '../transactions/transactions.service';
 
 import {
@@ -22,6 +21,7 @@ import {
 export class BankAccountsService {
   constructor(
     private prisma: PrismaService,
+    private sharedService: SharedService,
     private transactionsService: TransactionsService,
   ) {}
 
@@ -30,9 +30,9 @@ export class BankAccountsService {
    */
 
   async createAccount(userId: string): Promise<BankAccountModel> {
-    const targetUser = await this.checkAndGetUserById(userId);
+    const targetUser = await this.sharedService.checkAndGetUserById(userId);
     if (targetUser.account) {
-      throw new ForbiddenException('This user already has balance account');
+      throw new ForbiddenException('This user already has bank account');
     }
 
     const createdAccount = await this.prisma.bankAccount.create({
@@ -49,7 +49,7 @@ export class BankAccountsService {
    */
 
   async getBalance(userId: string): Promise<GetBalanceResponseDto> {
-    const targetUser = await this.checkAndGetUserById(userId);
+    const targetUser = await this.sharedService.checkAndGetUserById(userId);
     return {
       balance: targetUser.account.balance,
     };
@@ -64,7 +64,7 @@ export class BankAccountsService {
       throw new UnprocessableEntityException('Amount must be greater than 0');
     }
 
-    const targetUser = await this.checkAndGetUserById(userId);
+    const targetUser = await this.sharedService.checkAndGetUserById(userId);
 
     const result = await this.prisma.$transaction(async (prisma) => {
       const updatedAccount = await prisma.bankAccount.update({
@@ -101,7 +101,7 @@ export class BankAccountsService {
       throw new UnprocessableEntityException('Amount must be greater than 0');
     }
 
-    const targetUser = await this.checkAndGetUserById(userId);
+    const targetUser = await this.sharedService.checkAndGetUserById(userId);
 
     if (targetUser.account.balance < amount) {
       throw new UnprocessableEntityException('Current balance is insufficient');
@@ -152,18 +152,9 @@ export class BankAccountsService {
       );
     }
 
-    const [sentUser, receivedUser] = await this.prisma.user.findMany({
-      where: {
-        id: { in: [sentUserId, receivedUserId] },
-      },
-      include: {
-        account: true,
-      },
-    });
-
-    if (!sentUser || !receivedUser) {
-      throw new NotFoundException('One or both users are not existed');
-    }
+    const sentUser = await this.sharedService.checkAndGetUserById(sentUserId);
+    const receivedUser =
+      await this.sharedService.checkAndGetUserById(receivedUserId);
 
     if (sentUser.account.balance < amount) {
       throw new UnprocessableEntityException('Current balance is insufficient');
@@ -204,26 +195,5 @@ export class BankAccountsService {
     });
 
     return result;
-  }
-
-  /**
-   * Check and get User by Id
-   */
-
-  private async checkAndGetUserById(userId: string): Promise<UserModel> {
-    const foundUser = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-      include: {
-        account: true,
-      },
-    });
-
-    if (!foundUser) {
-      throw new NotFoundException('User not found');
-    }
-
-    return foundUser;
   }
 }

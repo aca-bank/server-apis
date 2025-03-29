@@ -9,7 +9,7 @@ export const getRandomString = (): string =>
 
 /**
  * Normalize order query
- * { type: 'asc', createdAt: 'asc' } => [{ type: 'asc' }, { createdAt: 'asc' }]
+ * { type: 'asc', createdDate: 'asc' } => [{ type: 'asc' }, { createdDate: 'asc' }]
  */
 
 export const normalizeOrderQuery = (
