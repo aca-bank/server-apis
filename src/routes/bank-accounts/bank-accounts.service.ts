@@ -5,7 +5,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/app/prisma/prisma.service';
-import { AccountModel } from 'src/models/account.model';
+import { BankAccountModel } from 'src/models/bank-account.model';
 import { TransactionTypeEnum } from 'src/models/transaction.model';
 import { UserModel } from 'src/models/user.model';
 
@@ -16,10 +16,10 @@ import {
   GetBalanceResponseDto,
   TransferResponseDto,
   WithdrawResponseDto,
-} from './accounts.dto';
+} from './bank-accounts.dto';
 
 @Injectable()
-export class AccountsService {
+export class BankAccountsService {
   constructor(
     private prisma: PrismaService,
     private transactionsService: TransactionsService,
@@ -29,13 +29,13 @@ export class AccountsService {
    * Create account
    */
 
-  async createAccount(userId: string): Promise<AccountModel> {
+  async createAccount(userId: string): Promise<BankAccountModel> {
     const targetUser = await this.checkAndGetUserById(userId);
     if (targetUser.account) {
       throw new ForbiddenException('This user already has balance account');
     }
 
-    const createdAccount = await this.prisma.account.create({
+    const createdAccount = await this.prisma.bankAccount.create({
       data: {
         userId,
       },
@@ -67,7 +67,7 @@ export class AccountsService {
     const targetUser = await this.checkAndGetUserById(userId);
 
     const result = await this.prisma.$transaction(async (prisma) => {
-      const updatedAccount = await prisma.account.update({
+      const updatedAccount = await prisma.bankAccount.update({
         data: {
           balance: targetUser.account.balance + amount,
         },
@@ -108,7 +108,7 @@ export class AccountsService {
     }
 
     const result = await this.prisma.$transaction(async (prisma) => {
-      const updatedAccount = await prisma.account.update({
+      const updatedAccount = await prisma.bankAccount.update({
         data: {
           balance: targetUser.account.balance - amount,
         },
@@ -170,7 +170,7 @@ export class AccountsService {
     }
 
     const result = await this.prisma.$transaction(async (prisma) => {
-      const updatedSentAccount = await prisma.account.update({
+      const updatedSentAccount = await prisma.bankAccount.update({
         where: {
           userId: sentUser.id,
         },
@@ -179,7 +179,7 @@ export class AccountsService {
         },
       });
 
-      const updatedReceivedAccount = await prisma.account.update({
+      const updatedReceivedAccount = await prisma.bankAccount.update({
         where: {
           userId: receivedUser.id,
         },

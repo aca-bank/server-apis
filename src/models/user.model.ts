@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsNotEmpty, IsString } from 'class-validator';
 
-import { AccountModel } from './account.model';
+import { BankAccountModel } from './bank-account.model';
 
 export enum UserRoleEnum {
   CUSTOMER = 'CUSTOMER',
@@ -50,9 +50,15 @@ export class UserModel {
 
   @ApiProperty({
     description: 'Account info for customer role',
-    type: () => AccountModel,
+    type: () => BankAccountModel,
   })
-  account?: AccountModel;
+  account?: BankAccountModel;
+
+  @ApiProperty({
+    description: 'Activate status of user',
+  })
+  @IsBoolean()
+  activated?: boolean;
 
   @IsDate()
   createdDate?: Date;

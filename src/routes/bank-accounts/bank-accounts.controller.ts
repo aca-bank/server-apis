@@ -23,13 +23,13 @@ import {
   GetBalanceResponseDto,
   TransferResponseDto,
   WithdrawResponseDto,
-} from './accounts.dto';
-import { AccountsService } from './accounts.service';
+} from './bank-accounts.dto';
+import { BankAccountsService } from './bank-accounts.service';
 
 @ApiTags('accounts')
-@Controller('accounts')
-export class AccountsController {
-  constructor(private accountsService: AccountsService) {}
+@Controller('bank-accounts')
+export class BankAccountsController {
+  constructor(private bankAccountsService: BankAccountsService) {}
 
   /**
    * Get current balance
@@ -45,7 +45,7 @@ export class AccountsController {
   @Get('/balance')
   @HttpCode(HttpStatus.OK)
   getBalance(@AuthUser('userId') userId: string) {
-    return this.accountsService.getBalance(userId);
+    return this.bankAccountsService.getBalance(userId);
   }
 
   /**
@@ -64,7 +64,7 @@ export class AccountsController {
     @AuthUser('userId') userId: string,
     @Body() payload: AmountRequestDto,
   ) {
-    return this.accountsService.deposit(userId, payload.amount);
+    return this.bankAccountsService.deposit(userId, payload.amount);
   }
 
   /**
@@ -84,7 +84,7 @@ export class AccountsController {
     @AuthUser('userId') userId: string,
     @Body() payload: AmountRequestDto,
   ) {
-    return this.accountsService.withdraw(userId, payload.amount);
+    return this.bankAccountsService.withdraw(userId, payload.amount);
   }
 
   /**
@@ -109,7 +109,7 @@ export class AccountsController {
     @Param('receiveUserId') receiveUserId: string,
     @Body() payload: AmountRequestDto,
   ) {
-    return this.accountsService.transfer(
+    return this.bankAccountsService.transfer(
       sendUserId,
       receiveUserId,
       payload.amount,

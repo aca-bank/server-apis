@@ -1,5 +1,5 @@
 import { PickType } from '@nestjs/mapped-types';
-import { AccountModel } from 'src/models/account.model';
+import { BankAccountModel } from 'src/models/bank-account.model';
 import { TransactionModel } from 'src/models/transaction.model';
 
 /**
@@ -14,22 +14,22 @@ export class AmountRequestDto {
  * Response Dto
  */
 
-export class GetBalanceResponseDto extends PickType(AccountModel, [
+export class GetBalanceResponseDto extends PickType(BankAccountModel, [
   'balance',
 ]) {}
 
 export class DepositResponseDto {
-  account: AccountModel;
+  account: BankAccountModel;
   transaction: TransactionModel;
 }
 
 export class WithdrawResponseDto {
-  account: AccountModel;
+  account: BankAccountModel;
   transaction: TransactionModel;
 }
 
 export class TransferResponseDto {
-  sentAccount: AccountModel;
-  receivedAccount: AccountModel;
+  sentAccount: BankAccountModel;
+  receivedAccount: BankAccountModel;
   transaction: TransactionModel;
 }

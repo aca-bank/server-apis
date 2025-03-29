@@ -23,9 +23,10 @@ model User {
   id                    String            @id             @default(uuid()) 
   username              String            @unique         @db.VarChar(30)                  
   password              String            
-  name                  String          
+  name                  String        
   role                  UserRoleEnum
-  account               Account?          
+  account               BankAccount? 
+  activated             Boolean           @default(true)         
   createdDate           DateTime          @default(now())
   updatedDate           DateTime          @updatedAt
 
@@ -36,7 +37,7 @@ model User {
  * Account Model
  */
 
-model Account {
+model BankAccount {
   id                    String            @id             @default(uuid()) 
   balance               Float             @default(0)
   userId                String            @unique
@@ -60,9 +61,9 @@ model Transaction {
   type                  TransactionTypeEnum
   amount                Float
   sentAccountId         String
-  sentAccount           Account           @relation("SentTransactions", fields: [sentAccountId], references: [id])
+  sentAccount           BankAccount       @relation("SentTransactions", fields: [sentAccountId], references: [id])
   receivedAccountId     String?
-  receivedAccount       Account?          @relation("ReceivedTransactions", fields: [receivedAccountId], references: [id])
+  receivedAccount       BankAccount?      @relation("ReceivedTransactions", fields: [receivedAccountId], references: [id])
   createdDate           DateTime          @default(now())
 
   @@index([amount, type, createdDate])

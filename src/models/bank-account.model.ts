@@ -4,7 +4,7 @@ import { UserModel } from 'src/models/user.model';
 
 import { TransactionModel } from './transaction.model';
 
-export class AccountModel {
+export class BankAccountModel {
   @ApiProperty({
     description: 'Uuid',
     type: String,

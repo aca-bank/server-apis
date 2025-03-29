@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
-import { AccountModel } from './account.model';
+import { BankAccountModel } from './bank-account.model';
 
 export enum TransactionTypeEnum {
   DEPOSIT = 'DEPOSIT',
@@ -44,9 +44,9 @@ export class TransactionModel {
 
   @ApiProperty({
     description: 'Mapping to Account entity for Deposit, Withdraw and Transfer',
-    type: AccountModel,
+    type: BankAccountModel,
   })
-  sentAccount?: AccountModel;
+  sentAccount?: BankAccountModel;
 
   @ApiProperty({
     description: 'Mapping to Id in Account entity for Receive Transfer',
@@ -57,9 +57,9 @@ export class TransactionModel {
 
   @ApiProperty({
     description: 'Mapping to Account entity for Receive Transfer',
-    type: AccountModel,
+    type: BankAccountModel,
   })
-  receivedAccount?: AccountModel;
+  receivedAccount?: BankAccountModel;
 
   @IsDate()
   createdDate?: Date;

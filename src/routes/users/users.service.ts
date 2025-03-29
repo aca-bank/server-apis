@@ -3,7 +3,7 @@ import { PrismaService } from 'src/app/prisma/prisma.service';
 import { UserModel, UserRoleEnum } from 'src/models/user.model';
 import { hashData } from 'src/utils/helpers';
 
-import { AccountsService } from '../accounts/accounts.service';
+import { BankAccountsService } from '../bank-accounts/bank-accounts.service';
 
 import { CreateUserRequestDto } from './users.dtos';
 
@@ -11,7 +11,7 @@ import { CreateUserRequestDto } from './users.dtos';
 export class UsersService {
   constructor(
     private prisma: PrismaService,
-    private accountsService: AccountsService,
+    private bankAccountsService: BankAccountsService,
   ) {}
 
   /**
@@ -24,7 +24,7 @@ export class UsersService {
       UserRoleEnum.CUSTOMER,
     );
 
-    const createdAccount = await this.accountsService.createAccount(
+    const createdAccount = await this.bankAccountsService.createAccount(
       createdCustomer.id,
     );
 
