@@ -10,6 +10,7 @@ import {
 import { BankAccountsController } from '../bank-accounts.controller';
 import {
   DepositResponseDto,
+  GetBalanceResponseDto,
   TransferResponseDto,
   WithdrawResponseDto,
 } from '../bank-accounts.dto';
@@ -23,6 +24,7 @@ describe('BankAccountsController', () => {
     deposit: jest.fn(),
     withdraw: jest.fn(),
     transfer: jest.fn(),
+    getAccountBalance: jest.fn(),
     getTotalBankAmount: jest.fn(),
   };
 
@@ -45,6 +47,19 @@ describe('BankAccountsController', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('should return current balance', async () => {
+    const mockGetBalanceResponse: GetBalanceResponseDto = {
+      balance: 100,
+    };
+    (bankAccountsService.getAccountBalance as jest.Mock).mockResolvedValueOnce(
+      mockGetBalanceResponse,
+    );
+
+    const result = await bankAccountsController.getAccountBalance(mockUser1.id);
+
+    expect(result).toStrictEqual(mockGetBalanceResponse);
   });
 
   it('should deposit successfully', async () => {

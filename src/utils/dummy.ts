@@ -27,12 +27,12 @@ export const mockTransaction2: TransactionModel = {
 
 export const mockBankAccount1: BankAccountModel = {
   balance: 100,
-  userId: 'customer-id-01',
+  userId: 'user-id-01',
 };
 
 export const mockBankAccount2: BankAccountModel = {
   balance: 50,
-  userId: 'customer-id-02',
+  userId: 'user-id-02',
 };
 
 /**
@@ -46,6 +46,7 @@ export const mockUser1: UserModel = {
   name: 'User 01',
   role: UserRoleEnum.CUSTOMER,
   account: mockBankAccount1,
+  activated: true,
 };
 
 export const mockUser2: UserModel = {
@@ -55,4 +56,5 @@ export const mockUser2: UserModel = {
   name: 'User 02',
   role: UserRoleEnum.CUSTOMER,
   account: mockBankAccount2,
+  activated: true,
 };

@@ -1,11 +1,12 @@
 import { UnprocessableEntityException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from 'src/app/prisma/prisma.service';
+import { UserRoleEnum } from 'src/models/user.model';
 import { BankAccountsService } from 'src/routes/bank-accounts/bank-accounts.service';
 import { mockBankAccount1, mockUser1 } from 'src/utils/dummy';
 
-import { UsersService } from '../users.service';
 import { CreateUserRequestDto } from '../users.dtos';
+import { UsersService } from '../users.service';
 
 jest.mock('src/utils/helpers');
 
@@ -41,6 +42,12 @@ describe('UsersService', () => {
     usersService = module.get<UsersService>(UsersService);
     prismaService = module.get<PrismaService>(PrismaService);
     bankAccountsService = module.get<BankAccountsService>(BankAccountsService);
+
+    prismaService.$transaction = jest
+      .fn()
+      .mockImplementation(async (callback) => {
+        return callback(prismaService);
+      });
   });
 
   afterEach(() => {
@@ -48,25 +55,11 @@ describe('UsersService', () => {
   });
 
   describe('createCustomer', () => {
-    it('should throw error if the username is existed', async () => {
-      prismaService.user.findUnique = jest
-        .fn()
-        .mockResolvedValueOnce(mockUser1);
-
-      try {
-        await usersService.createCustomer(mockUser1);
-      } catch (error) {
-        expect(error).toBeInstanceOf(UnprocessableEntityException);
-        expect(error.message).toBe('Username is existed');
-      }
-    });
-
     it('should create customer with a bank account successfully', async () => {
-      prismaService.user.findUnique = jest.fn().mockResolvedValueOnce(null);
-      prismaService.user.create = jest.fn().mockResolvedValueOnce(mockUser1);
-      bankAccountsService.createAccount = jest
-        .fn()
-        .mockResolvedValueOnce(mockBankAccount1);
+      jest.spyOn(usersService, 'createUser').mockResolvedValue(mockUser1);
+      jest
+        .spyOn(bankAccountsService, 'createAccount')
+        .mockResolvedValue(mockBankAccount1);
 
       const customerRequest: CreateUserRequestDto = {
         username: mockUser1.username,
@@ -76,6 +69,15 @@ describe('UsersService', () => {
       const createdCustomer =
         await usersService.createCustomer(customerRequest);
 
+      expect(usersService.createUser).toHaveBeenCalledWith({
+        payload: customerRequest,
+        roleType: UserRoleEnum.CUSTOMER,
+        prisma: prismaService,
+      });
+      expect(bankAccountsService.createAccount).toHaveBeenCalledWith({
+        userId: mockUser1.id,
+        prisma: prismaService,
+      });
       expect(createdCustomer).toStrictEqual(mockUser1);
       expect(createdCustomer.account).toStrictEqual(mockBankAccount1);
     });
@@ -116,6 +118,36 @@ describe('UsersService', () => {
 
       expect(createdManager).toStrictEqual(mockManager);
       expect(createdManager.account).toBeUndefined();
+    });
+  });
+
+  describe('private createService', () => {
+    it('should throw error if the username is existed', async () => {
+      prismaService.user.findUnique = jest
+        .fn()
+        .mockResolvedValueOnce(mockUser1);
+
+      try {
+        await usersService.createUser({
+          payload: mockUser1,
+          roleType: UserRoleEnum.CUSTOMER,
+        });
+      } catch (error) {
+        expect(error).toBeInstanceOf(UnprocessableEntityException);
+        expect(error.message).toBe('Username is existed');
+      }
+    });
+
+    it('should create user successfully', async () => {
+      prismaService.user.findUnique = jest.fn().mockResolvedValueOnce(null);
+      prismaService.user.create = jest.fn().mockResolvedValueOnce(mockUser1);
+
+      const result = await usersService.createUser({
+        payload: mockUser1,
+        roleType: UserRoleEnum.CUSTOMER,
+      });
+
+      expect(result).toStrictEqual(mockUser1);
     });
   });
 });

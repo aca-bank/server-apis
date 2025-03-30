@@ -4,6 +4,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/app/prisma/prisma.service';
+import { OmitPrismaMiddlewareService } from 'src/app/prisma/prisma.types';
 import { BankAccountModel } from 'src/models/bank-account.model';
 import { TransactionTypeEnum } from 'src/models/transaction.model';
 
@@ -29,13 +30,12 @@ export class BankAccountsService {
    * Create account
    */
 
-  async createAccount(userId: string): Promise<BankAccountModel> {
-    const targetUser = await this.sharedService.checkAndGetUserById(userId);
-    if (targetUser?.account) {
-      throw new ForbiddenException('This user already has a bank account');
-    }
-
-    const createdAccount = await this.prisma.bankAccount.create({
+  async createAccount(props: {
+    userId: string;
+    prisma?: OmitPrismaMiddlewareService;
+  }): Promise<BankAccountModel> {
+    const { userId, prisma = this.prisma } = props;
+    const createdAccount = await prisma.bankAccount.create({
       data: {
         userId,
       },
