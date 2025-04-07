@@ -28,8 +28,17 @@ export class WithdrawResponseDto {
   transaction: TransactionModel;
 }
 
+/**
+ * Transfer
+ */
+
+export class TransferParams {
+  sentAccountId: string;
+  receivedAccountId: string;
+  amount: number;
+}
+
 export class TransferResponseDto {
   sentAccount: BankAccountModel;
   receivedAccount: BankAccountModel;
-  transaction: TransactionModel;
 }

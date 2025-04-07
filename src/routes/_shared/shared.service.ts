@@ -34,4 +34,19 @@ export class SharedService {
 
     return foundUser;
   }
+
+  /**
+   * Check and get User by Id
+   */
+
+  async checkAndGetUserByAccountId(accountId: string): Promise<UserModel> {
+    const foundBankAccount = await this.prisma.bankAccount.findUnique({
+      where: {
+        id: accountId,
+      },
+    });
+
+    const foundUser = await this.checkAndGetUserById(foundBankAccount?.userId);
+    return foundUser;
+  }
 }

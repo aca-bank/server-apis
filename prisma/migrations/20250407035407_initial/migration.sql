@@ -4,6 +4,9 @@ CREATE TYPE "UserRoleEnum" AS ENUM ('CUSTOMER', 'MANAGER');
 -- CreateEnum
 CREATE TYPE "TransactionTypeEnum" AS ENUM ('DEPOSIT', 'WITHDRAW', 'TRANSFER');
 
+-- CreateEnum
+CREATE TYPE "TransactionStatusEnum" AS ENUM ('PENDING', 'SUCCESS');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -32,9 +35,13 @@ CREATE TABLE "Transaction" (
     "id" TEXT NOT NULL,
     "type" "TransactionTypeEnum" NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
+    "status" "TransactionStatusEnum" NOT NULL DEFAULT 'PENDING',
     "sentAccountId" TEXT NOT NULL,
     "receivedAccountId" TEXT,
+    "userNote" TEXT,
+    "systemNote" TEXT,
     "createdDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedDate" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Transaction_pkey" PRIMARY KEY ("id")
 );

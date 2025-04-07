@@ -1,5 +1,6 @@
 import {
-  ForbiddenException,
+  forwardRef,
+  Inject,
   Injectable,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import { TransactionsService } from '../transactions/transactions.service';
 import {
   DepositResponseDto,
   GetBalanceResponseDto,
+  TransferParams,
   TransferResponseDto,
   WithdrawResponseDto,
 } from './bank-accounts.dto';
@@ -23,6 +25,7 @@ export class BankAccountsService {
   constructor(
     private prisma: PrismaService,
     private sharedService: SharedService,
+    @Inject(forwardRef(() => TransactionsService))
     private transactionsService: TransactionsService,
   ) {}
 
@@ -77,7 +80,7 @@ export class BankAccountsService {
       });
 
       const createdTransaction =
-        await this.transactionsService.createTransaction({
+        await this.transactionsService.createDepoWithTransaction({
           sentAccountId: updatedAccount.id,
           type: TransactionTypeEnum.DEPOSIT,
           amount,
@@ -118,7 +121,7 @@ export class BankAccountsService {
       });
 
       const createdTransaction =
-        await this.transactionsService.createTransaction({
+        await this.transactionsService.createDepoWithTransaction({
           sentAccountId: updatedAccount.id,
           type: TransactionTypeEnum.WITHDRAW,
           amount,
@@ -137,28 +140,17 @@ export class BankAccountsService {
    * Transfer
    */
 
-  async transfer(
-    sentUserId: string,
-    receivedUserId: string,
-    amount: number,
-  ): Promise<TransferResponseDto> {
-    if (amount <= 0) {
-      throw new UnprocessableEntityException('Amount must be greater than 0');
-    }
-
-    if (sentUserId === receivedUserId) {
-      throw new UnprocessableEntityException(
-        'Duplicated transfer of sent user and received user',
-      );
-    }
-
-    const sentUser = await this.sharedService.checkAndGetUserById(sentUserId);
-    const receivedUser =
-      await this.sharedService.checkAndGetUserById(receivedUserId);
-
-    if (sentUser.account.balance < amount) {
-      throw new UnprocessableEntityException('Current balance is insufficient');
-    }
+  async transfer({
+    sentAccountId,
+    receivedAccountId,
+    amount,
+  }: TransferParams): Promise<TransferResponseDto> {
+    const { sentUser, receivedUser } =
+      await this.transactionsService.validateBeforeTransfer({
+        sentAccountId,
+        receivedAccountId,
+        amount,
+      });
 
     const result = await this.prisma.$transaction(async (prisma) => {
       const updatedSentAccount = await prisma.bankAccount.update({
@@ -179,18 +171,9 @@ export class BankAccountsService {
         },
       });
 
-      const createdTransaction =
-        await this.transactionsService.createTransaction({
-          sentAccountId: updatedSentAccount.id,
-          receivedAccountId: updatedReceivedAccount.id,
-          type: TransactionTypeEnum.TRANSFER,
-          amount,
-        });
-
       return {
         sentAccount: updatedSentAccount,
         receivedAccount: updatedReceivedAccount,
-        transaction: createdTransaction,
       };
     });
 

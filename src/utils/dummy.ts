@@ -1,6 +1,7 @@
 import { BankAccountModel } from 'src/models/bank-account.model';
 import {
   TransactionModel,
+  TransactionStatusEnum,
   TransactionTypeEnum,
 } from 'src/models/transaction.model';
 import { UserModel, UserRoleEnum } from 'src/models/user.model';
@@ -13,12 +14,14 @@ export const mockTransaction1: TransactionModel = {
   type: TransactionTypeEnum.DEPOSIT,
   amount: 100,
   sentAccountId: 'bank-account-01',
+  status: TransactionStatusEnum.SUCCESS,
 };
 
 export const mockTransaction2: TransactionModel = {
   type: TransactionTypeEnum.DEPOSIT,
   amount: 100,
   sentAccountId: 'bank-account-02',
+  status: TransactionStatusEnum.SUCCESS,
 };
 
 /**

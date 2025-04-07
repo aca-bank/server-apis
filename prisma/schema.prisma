@@ -26,9 +26,9 @@ model User {
   name                  String        
   role                  UserRoleEnum
   account               BankAccount? 
-  activated             Boolean           @default(true)         
-  createdDate           DateTime          @default(now())
-  updatedDate           DateTime          @updatedAt
+  activated             Boolean                           @default(true)         
+  createdDate           DateTime                          @default(now())
+  updatedDate           DateTime                          @updatedAt
 
   @@index([name, role, createdDate])
 }
@@ -56,15 +56,25 @@ enum TransactionTypeEnum {
   TRANSFER
 }
 
+enum TransactionStatusEnum {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
 model Transaction {
   id                    String            @id             @default(uuid())
   type                  TransactionTypeEnum
   amount                Float
+  status                TransactionStatusEnum             @default(PENDING)
   sentAccountId         String
-  sentAccount           BankAccount       @relation("SentTransactions", fields: [sentAccountId], references: [id])
+  sentAccount           BankAccount                       @relation("SentTransactions", fields: [sentAccountId], references: [id])
   receivedAccountId     String?
-  receivedAccount       BankAccount?      @relation("ReceivedTransactions", fields: [receivedAccountId], references: [id])
-  createdDate           DateTime          @default(now())
+  receivedAccount       BankAccount?                      @relation("ReceivedTransactions", fields: [receivedAccountId], references: [id])
+  userNote              String?
+  systemNote            String?
+  createdDate           DateTime                          @default(now())
+  updatedDate           DateTime                          @updatedAt     
 
   @@index([amount, type, createdDate])
 }

@@ -1,6 +1,7 @@
 import { UnprocessableEntityException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from 'src/app/prisma/prisma.service';
+import { TransactionTypeEnum } from 'src/models/transaction.model';
 import { SharedService } from 'src/routes/_shared/shared.service';
 import { TransactionsService } from 'src/routes/transactions/transactions.service';
 import {
@@ -17,7 +18,6 @@ import {
   WithdrawResponseDto,
 } from '../bank-accounts.dto';
 import { BankAccountsService } from '../bank-accounts.service';
-import { TransactionTypeEnum } from 'src/models/transaction.model';
 
 describe('BankAccountsService', () => {
   let bankAccountsService: BankAccountsService;
